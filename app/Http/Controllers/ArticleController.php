@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Http\Requests;
 use App\Article;
+use App\Http\Requests;
+use Illuminate\Http\Request;
+use Validator;
 use App\Http\Resources\Article as ArticleResource;
 
 class ArticleController extends Controller
@@ -41,11 +42,9 @@ class ArticleController extends Controller
      */
     public function store(Request $request)
     {
-        $article = $request->isMethod('put') ? Article::findOrFail($request->article_id) : new Article;
-
-        $article->id = $request->input('article_id');
-        $article->title = $request->input('title');
-        $article->body = $request->input('body');
+        $article = new Article;
+        $article->title = $request->title;
+        $article->body = $request->body;
         if ($article->save()) {
             return new ArticleResource($article);
         }
@@ -86,7 +85,13 @@ class ArticleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $article = Article::findOrFail($id);
+
+        $article->title = $request->title ? $request->title : $article->title;
+        $article->body = $request->body ? $request->body : $article->body;
+        if ($article->save()) {
+            return new ArticleResource($article);
+        }
     }
 
     /**
@@ -99,7 +104,7 @@ class ArticleController extends Controller
     {
         // Get article
         $article = Article::findOrFail($id);
-        
+
         if ($article->delete()) {
             return new ArticleResource($article);
         }
